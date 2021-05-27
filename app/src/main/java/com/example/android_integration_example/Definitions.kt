@@ -7,12 +7,12 @@ enum class Currency(val currencyVal: String) {
 }
 
 data class CheckoutArgs(
-    var to: String?,
-    val from: String?,
-    val amount: String?,
-    val currency: Currency?,
-    val depositAmount: String?,
-    val description: String?,
+  var to: String?,
+  val from: String?,
+  val amount: String?,
+  val currency: Currency?,
+  val depositAmount: String?,
+  val description: String?,
 )
 
 data class DisputeArgs(
@@ -33,6 +33,7 @@ data class ReleaseArgs(
   var token: String,
   var amount: String?
 )
+
 
 val checkoutAction = CheckoutArgs(
   "simon+seller@trustshare.co",
