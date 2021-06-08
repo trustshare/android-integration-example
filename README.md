@@ -17,7 +17,7 @@ The `type` parameter tells us what sort of `Action` you would like to do and the
 
 The resulting url should look similar to this: 
 
-`https://demo.trustshare.co/mobile-sdk?type=checkout&handlerName=myHandlerName`.
+`https://demo.trustshare.co/mobile-sdk?type=checkout&handlerName=myHandlerName`.    
 
 ### Actions
 
@@ -32,7 +32,6 @@ Release
 ```
 
 Each action has its own required parameters defined in their respective data classes. See [Definitions](/android-integration-example/app/src/main/java/com/example/android_integration_example/Definitions.kt#L9-L35) for types.
-
 ### State updates
 The example android app receives state updates from the webview using the [JSBridge](/android-integration-example/app/src/main/java/com/example/android_integration_example/MainActivity#L161-L171) class. 
 This class requires a function called postMessage which is used by trustshare to send messages back to the android app. The messages passed will be JSON which is documented in the [web sdk documentation](https://docs.trustshare.co/sdk/web-sdk). 

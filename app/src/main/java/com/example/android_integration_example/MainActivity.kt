@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
     val action = args.action
 
     builder.scheme("https")
-      .authority("${subdomain}.lvh.me")
+      .authority("${subdomain}.nope.sh")
       .appendPath("mobile-sdk")
       .appendQueryParameter("subdomain", subdomain)
       .appendQueryParameter("handlerName", args.handlerName)
