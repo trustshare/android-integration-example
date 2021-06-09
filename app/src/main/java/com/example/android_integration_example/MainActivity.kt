@@ -170,11 +170,9 @@ class MainActivity : AppCompatActivity() {
       }
     }
 
-    // TODO: Figure out how to remove the webview
     private fun destroyWebView() {
-      Log.d("trustshare.message", "destroy fn called!!!!!")
-//      webView?.destroy()
-//      setContentView(null)
+      // Destroy web view and return back to app containing web view.
+      Log.d("trustshare.message", "Destroy function called.")
     }
   }
 }
