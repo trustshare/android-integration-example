@@ -6,4 +6,8 @@
             <certificates src="@raw/ca"/>
         </trust-anchors>
     </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">http://localhost:9987</domain>
+    </domain-config>
+    <base-config cleartextTrafficPermitted="true" />
 </network-security-config>

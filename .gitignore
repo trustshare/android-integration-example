@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+server/.env
+server/node_modules
+.idea
