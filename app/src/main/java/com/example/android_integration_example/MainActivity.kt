@@ -9,9 +9,11 @@ import android.util.Log
 import android.view.WindowManager
 import android.webkit.*
 import android.webkit.WebView.WebViewTransport
+import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
+import com.example.trustshare_android_integration.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -56,32 +58,33 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
-        // The arguments needed to integrate with the trustshare web sdk.
         super.onCreate(savedInstanceState)
         mContext = this
+        setContentView(R.layout.activity_main)
 
-        Log.d("start", clientSecret)
-        coroutineScope.launch {
-            Log.d("Launch", clientSecret)
-            try {
-                Log.d("TRY", clientSecret)
-                clientSecret = fetchClientSecret()
-                // The client secret has been fetched successfully.
-                // print the client secret here
-                Log.d("client_secret", clientSecret)
-                val webviewArgs = WebViewArgs("trustshareAndroid", callback)
-                createPrimaryWebView(webviewArgs)
-                setContentView(webView)
-                // The client secret has been fetched successfully.
-                // You can now show the WebView.
-            } catch (e: Exception) {
-                // There was an error fetching the client secret.
-                // You can show an error message or retry the request.
+        // find button with id of button
+        val button = findViewById<Button>(R.id.button)
+
+        // set on-click listener
+        button.setOnClickListener {
+            // Fetch client secret here
+            coroutineScope.launch {
+                try {
+                    clientSecret = fetchClientSecret()
+                    Log.d("client_secret", clientSecret)
+
+                    // Create and display WebView here
+                    val webviewArgs = WebViewArgs("trustshareAndroid", callback)
+                    createPrimaryWebView(webviewArgs)
+                    setContentView(webView)
+                } catch (e: Exception) {
+                    // Handle error fetching client secret
+                    // You can show an error message or retry the request.
+                    Log.e("error_fetching_secret", e.message.toString())
+                }
             }
         }
     }
-
 
     private fun createPrimaryWebView(args: WebViewArgs) {
         webView = WebView(this)
@@ -101,10 +104,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     fun makeURL(): String {
         val builder = Uri.Builder()
-        builder.scheme("https").authority("checkout.trustshare.io").path("/process")
+        builder.scheme("https").authority("checkout.staging.trustshare.io").path("/process")
             .appendQueryParameter("s", clientSecret).appendQueryParameter("handler", handlerName)
         val encodedQuery = builder.build().encodedQuery?.replace("+", "%2B")
-        val urlString = "https://checkout.trustshare.io/process?$encodedQuery"
+        val urlString = "https://checkout.staging.trustshare.io/process?$encodedQuery"
         return URL(urlString).toString()
     }
 
