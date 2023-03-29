@@ -65,9 +65,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         val type = json.getString("type")
         Log.d("trustshare.type", type)
         if (type == "complete") {
-            // Handle success
-            Log.d("trustshare.success", "success")
-            // Close the webview
             mainLayout.post {
                 webView?.visibility = WebView.GONE
             }
@@ -95,19 +92,13 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         jsonText = findViewById(R.id.json_text) // Add this line
         button = findViewById<Button>(R.id.button)
         button?.setOnClickListener {
-            // Fetch client secret here
             coroutineScope.launch {
                 try {
                     clientSecret = fetchClientSecret()
-                    Log.d("client_secret", clientSecret)
-
-                    // Create and display WebView here
                     val webviewArgs = WebViewArgs(handlerName, callback)
                     createPrimaryWebView(webviewArgs)
                     setContentView(webView)
                 } catch (e: Exception) {
-                    // Handle error fetching client secret
-                    // You can show an error message or retry the request.
                     Log.e("error_fetching_secret", e.message.toString())
                 }
             }
@@ -117,7 +108,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private fun createPrimaryWebView(args: WebViewArgs) {
         val url = makeURL()
         runOnUiThread {
-            // This code runs on the main UI thread
             webView = WebView(this)
             webView?.settings?.userAgentString =
                 webView?.settings?.userAgentString + " trustshare-sdk/android/1.0"
@@ -127,8 +117,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             webView?.webChromeClient = UriChromeClient()
             webView?.settings?.setSupportMultipleWindows(true)
             webView?.addJavascriptInterface(JSBridge(args.callback), args.handlerName)
-            setContentView(webView) // Set content view on the main thread
-            webView?.loadUrl(url) // Load the URL on the main thread
+            setContentView(webView)
+            webView?.loadUrl(url)
         }
     }
 
@@ -180,13 +170,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             builder?.dismiss()
         }
     }
-
-
-    fun parseJson(jsonString: String) {
-
-        // Do something with the parsed values...
-    }
-
+    
     inner class JSBridge(val cb: (message: String) -> Unit) {
         @JavascriptInterface
         // This function must be called postMessage.
