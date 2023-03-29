@@ -134,10 +134,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     fun makeURL(): String {
         val builder = Uri.Builder()
-        builder.scheme("https").authority("checkout.staging.trustshare.io").path("/process")
+        builder.scheme("https").authority("checkout.trustshare.io").path("/process")
             .appendQueryParameter("s", clientSecret).appendQueryParameter("handler", handlerName)
         val encodedQuery = builder.build().encodedQuery?.replace("+", "%2B")
-        val urlString = "https://checkout.staging.trustshare.io/process?$encodedQuery"
+        val urlString = "https://checkout.trustshare.io/process?$encodedQuery"
         return URL(urlString).toString()
     }
 
