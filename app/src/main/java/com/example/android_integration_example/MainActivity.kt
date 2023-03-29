@@ -4,14 +4,19 @@ import android.content.Context
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.util.Log
+import android.view.View
 import android.view.WindowManager
 import android.webkit.*
 import android.webkit.WebView.WebViewTransport
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleOwner
 import com.example.trustshare_android_integration.R
 import kotlinx.coroutines.CoroutineScope
@@ -26,9 +31,7 @@ import java.net.URL
 
 suspend fun fetchClientSecret(): String {
     val client = OkHttpClient()
-    val request = Request.Builder()
-        .url("http://10.0.2.2:9987/createPaymentIntent")
-        .build()
+    val request = Request.Builder().url("http://10.0.2.2:9987/createPaymentIntent").build()
 
     val response = withContext(Dispatchers.IO) {
         client.newCall(request).execute()
@@ -47,12 +50,39 @@ suspend fun fetchClientSecret(): String {
 class MainActivity : AppCompatActivity(), LifecycleOwner {
     var clientSecret = "your_client_secret_will_be_here"
     private var handlerName = "trustshareHandler"
+    private val handler = Handler(Looper.getMainLooper())
+    private lateinit var mainLayout: ConstraintLayout
     private var webView: WebView? = null
     private var webViewPopup: WebView? = null
     private var mContext: Context? = null
     private var builder: AlertDialog? = null
+    private lateinit var jsonText: TextView
+    private var button: Button? = null
+
     private val callback = fun(message: String) {
         Log.d("trustshare.message", message)
+        val json = JSONObject(message)
+        val type = json.getString("type")
+        Log.d("trustshare.type", type)
+        if (type == "complete") {
+            // Handle success
+            Log.d("trustshare.success", "success")
+            // Close the webview
+            mainLayout.post {
+                webView?.visibility = WebView.GONE
+            }
+            handler.post {
+                // Hide the create intent button
+                button?.visibility = View.GONE
+                // Destroy the web view
+                webView?.destroy()
+                webView = null
+                // Show the JSON in the text view
+                setContentView(R.layout.activity_main)
+                jsonText = findViewById(R.id.json_text)
+                jsonText.setText(message)
+            }
+        }
         return
     }
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
@@ -61,12 +91,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         super.onCreate(savedInstanceState)
         mContext = this
         setContentView(R.layout.activity_main)
-
-        // find button with id of button
-        val button = findViewById<Button>(R.id.button)
-
-        // set on-click listener
-        button.setOnClickListener {
+        mainLayout = findViewById(R.id.main_layout) // Add this line
+        jsonText = findViewById(R.id.json_text) // Add this line
+        button = findViewById<Button>(R.id.button)
+        button?.setOnClickListener {
             // Fetch client secret here
             coroutineScope.launch {
                 try {
@@ -74,7 +102,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                     Log.d("client_secret", clientSecret)
 
                     // Create and display WebView here
-                    val webviewArgs = WebViewArgs("trustshareAndroid", callback)
+                    val webviewArgs = WebViewArgs(handlerName, callback)
                     createPrimaryWebView(webviewArgs)
                     setContentView(webView)
                 } catch (e: Exception) {
@@ -87,19 +115,21 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     private fun createPrimaryWebView(args: WebViewArgs) {
-        webView = WebView(this)
-        webView?.settings?.userAgentString =
-            webView?.settings?.userAgentString + " trustshare-sdk/android/1.0"
-        webView?.settings?.javaScriptEnabled = true
-        webView?.settings?.domStorageEnabled = true
-        webView!!.webViewClient = UriWebViewClient()
-        webView!!.webChromeClient = UriChromeClient()
-        webView?.settings?.setSupportMultipleWindows(true)
-        webView?.addJavascriptInterface(JSBridge(args.callback), args.handlerName)
         val url = makeURL()
-        // print the url here
-        Log.d("url", url)
-        webView?.loadUrl(url)
+        runOnUiThread {
+            // This code runs on the main UI thread
+            webView = WebView(this)
+            webView?.settings?.userAgentString =
+                webView?.settings?.userAgentString + " trustshare-sdk/android/1.0"
+            webView?.settings?.javaScriptEnabled = true
+            webView?.settings?.domStorageEnabled = true
+            webView?.webViewClient = UriWebViewClient()
+            webView?.webChromeClient = UriChromeClient()
+            webView?.settings?.setSupportMultipleWindows(true)
+            webView?.addJavascriptInterface(JSBridge(args.callback), args.handlerName)
+            setContentView(webView) // Set content view on the main thread
+            webView?.loadUrl(url) // Load the URL on the main thread
+        }
     }
 
     fun makeURL(): String {
@@ -111,8 +141,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         return URL(urlString).toString()
     }
 
-    // This is needed to deal with the open banking flow popup flow.
-    // TODO: Check if only needed for local dev only. May be able to be removed.
     private class UriWebViewClient : WebViewClient() {
         override fun onReceivedSslError(
             view: WebView, handler: SslErrorHandler, error: SslError
@@ -151,6 +179,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             webViewPopup?.destroy()
             builder?.dismiss()
         }
+    }
+
+
+    fun parseJson(jsonString: String) {
+
+        // Do something with the parsed values...
     }
 
     inner class JSBridge(val cb: (message: String) -> Unit) {
