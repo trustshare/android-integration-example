@@ -1,0 +1,17 @@
+{
+  "name": "trustshare-server",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "npx tsx src/server.ts"
+  },
+  "dependencies": {
+    "@trustshare/api": "1.0.14",
+    "dotenv": "16.0.3",
+    "fastify": "^4.9.2"
+  },
+  "devDependencies": {
+    "typescript": "~4.3.5",
+    "@types/node": "18.15.3"
+  },
+  "private": true
+}
